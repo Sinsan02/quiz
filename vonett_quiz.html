@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VØNett Eksamenquiz</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --card: #1e2333;
+    --border: #2a3050;
+    --accent: #4f8ef7;
+    --accent2: #a78bfa;
+    --green: #34d399;
+    --red: #f87171;
+    --text: #e8eaf0;
+    --muted: #7a82a0;
+    --yellow: #fbbf24;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1f35 0%, #0f1117 60%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 24px 36px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: 50%;
+    transform: translateX(-50%);
+    width: 500px; height: 300px;
+    background: radial-gradient(ellipse, rgba(79,142,247,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .tag {
+    display: inline-block;
+    background: rgba(79,142,247,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(79,142,247,0.3);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #e8eaf0, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 400;
+  }
+
+  .progress-bar-wrap {
+    width: 100%;
+    max-width: 640px;
+    margin: 28px auto 0;
+    background: var(--border);
+    border-radius: 99px;
+    height: 6px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.4s cubic-bezier(.4,0,.2,1);
+  }
+
+  .progress-text {
+    display: flex;
+    justify-content: space-between;
+    max-width: 640px;
+    margin: 8px auto 0;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .score-badges {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .badge .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  .dot-green { background: var(--green); }
+  .dot-red { background: var(--red); }
+  .dot-accent { background: var(--accent); }
+
+  main {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 36px 20px 60px;
+  }
+
+  .category-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 12px;
+  }
+
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 28px;
+    position: relative;
+    animation: fadeUp 0.35s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-number {
+    position: absolute;
+    top: -1px; right: 24px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 0 0 10px 10px;
+    letter-spacing: 0.05em;
+  }
+
+  .question-text {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--text);
+    margin-bottom: 22px;
+    padding-right: 40px;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    background: transparent;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+    line-height: 1.5;
+  }
+
+  .option:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: rgba(79,142,247,0.07);
+    transform: translateX(2px);
+  }
+
+  .option .letter {
+    min-width: 26px; height: 26px;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    color: var(--muted);
+    flex-shrink: 0;
+    transition: all 0.18s;
+  }
+
+  .option.correct {
+    border-color: var(--green);
+    background: rgba(52,211,153,0.08);
+  }
+  .option.correct .letter {
+    background: var(--green);
+    border-color: var(--green);
+    color: #0f1117;
+  }
+
+  .option.wrong {
+    border-color: var(--red);
+    background: rgba(248,113,113,0.08);
+  }
+  .option.wrong .letter {
+    background: var(--red);
+    border-color: var(--red);
+    color: #0f1117;
+  }
+
+  .option.reveal-correct {
+    border-color: var(--green);
+    background: rgba(52,211,153,0.05);
+    opacity: 0.7;
+  }
+  .option.reveal-correct .letter {
+    background: rgba(52,211,153,0.2);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .option:disabled { cursor: default; transform: none; }
+
+  .explanation {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: rgba(79,142,247,0.07);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: #c5cadd;
+    line-height: 1.6;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+
+  .explanation.show { display: block; }
+
+  .explanation strong { color: var(--accent2); }
+
+  .result-screen {
+    display: none;
+    text-align: center;
+    padding: 48px 20px;
+    animation: fadeUp 0.4s ease;
+  }
+
+  .result-screen.show { display: block; }
+
+  .result-emoji {
+    font-size: 64px;
+    margin-bottom: 20px;
+  }
+
+  .result-title {
+    font-family: 'Fraunces', serif;
+    font-size: 36px;
+    font-weight: 900;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--text), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .result-score {
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--accent);
+    font-family: 'Fraunces', serif;
+    margin: 16px 0;
+  }
+
+  .result-msg {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 32px;
+  }
+
+  .restart-btn {
+    padding: 14px 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  .restart-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  .category-section {
+    margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="tag">Eksamensforberedelse</div>
+  <h1>VØNett Quiz</h1>
+  <p class="subtitle">Organisasjonsforståelse · Clegg & Skyttermoen</p>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+  </div>
+  <div class="progress-text">
+    <span id="progressLabel">Spørsmål 0 av 20</span>
+    <span id="progressPct">0%</span>
+  </div>
+
+  <div class="score-badges">
+    <div class="badge"><span class="dot dot-green"></span><span id="correctCount">0</span> riktige</div>
+    <div class="badge"><span class="dot dot-red"></span><span id="wrongCount">0</span> feil</div>
+    <div class="badge"><span class="dot dot-accent"></span><span id="remainCount">20</span> igjen</div>
+  </div>
+</div>
+
+<main id="quizMain">
+  <!-- Questions injected here -->
+</main>
+
+<div class="result-screen" id="resultScreen">
+  <div class="result-emoji" id="resultEmoji">🎓</div>
+  <div class="result-title">Quiz fullført!</div>
+  <div class="result-score" id="resultScore">0/20</div>
+  <div class="result-msg" id="resultMsg">Bra jobbet!</div>
+  <button class="restart-btn" onclick="restartQuiz()">Ta quizen igjen</button>
+</div>
+
+<script>
+const questions = [
+  // ORGANISASJONSKULTUR - SCHEIN
+  {
+    category: "Organisasjonskultur – Schein",
+    q: "Hvilke tre nivåer inngår i Scheins kulturmodell?",
+    options: ["Normer, verdier og symboler", "Artefakter, verdier/normer og grunnleggende antakelser", "Atferd, holdninger og kunnskap", "Formell, uformell og skjult struktur"],
+    answer: 1,
+    explain: "<strong>Scheins tre nivåer:</strong> (1) Artefakter – synlige uttrykk som språk, atferd, kleskode. (2) Verdier og normer – hva gruppen sier er viktig. (3) Grunnleggende antakelser – de dypeste, ofte ubevisste oppfatningene som styrer atferden."
+  },
+  {
+    category: "Organisasjonskultur – Schein",
+    q: "I VØNett-caset: passordet på lappen ('Linje2025!') og åpne kart på arbeidsstasjoner er eksempler på hvilket nivå i Scheins modell?",
+    options: ["Grunnleggende antakelser", "Verdier og normer", "Artefakter", "Subkultur"],
+    answer: 2,
+    explain: "<strong>Artefakter</strong> er det synlige, observerbare uttrykket for kulturen – fysiske gjenstander, atferd og rutiner som kan observeres direkte. Passordet på lappen er et synlig uttrykk for en underliggende norm om at informasjonssikkerhet ikke er viktig."
+  },
+  {
+    category: "Organisasjonskultur – Schein",
+    q: "Montørens utsagn: 'Vi har en jobb å gjøre' – og at informasjonssikkerhet 'ikke angår arbeidet ute' – befinner seg på hvilket nivå hos Schein?",
+    options: ["Artefakter", "Verdier og normer", "Grunnleggende antakelser", "Formell struktur"],
+    answer: 2,
+    explain: "<strong>Grunnleggende antakelser</strong> er de dypeste, ofte ubevisste oppfatningene. At 'sikkerhet = fysisk sikkerhet' og at informasjonssikkerhet ikke er 'vår greie' er en grunnleggende antakelse i cowboykulturen – ikke bare en regel de velger å bryte."
+  },
+  {
+    category: "Organisasjonskultur – Schein",
+    q: "Hva menes med en 'subkultur' i organisasjonsfaget?",
+    options: ["En kultur som er svakere enn organisasjonskulturen", "En gruppe med egne verdier og normer som skiller seg fra resten av organisasjonen", "En ulovlig eller uformell praksis i organisasjonen", "Kulturen blant de lavest rangerte ansatte"],
+    answer: 1,
+    explain: "<strong>Subkultur:</strong> En gruppe innenfor organisasjonen som deler verdier, normer og antakelser som delvis skiller seg fra resten. I VØNett er Drift og beredskap en sterk subkultur – 'cowboymiljøet' – med lojalitet til laget fremfor organisasjonen."
+  },
+  {
+    category: "Organisasjonskultur – Schein",
+    q: "Hva er den viktigste grunnen til at kulturendring er vanskelig, ifølge Schein?",
+    options: ["Ansatte mangler motivasjon og lønn", "Ledelsen kommuniserer dårlig", "Grunnleggende antakelser er ubevisste og tas for gitt – de er ikke synlige eller lette å endre", "Organisasjonsstrukturen er for rigid"],
+    answer: 2,
+    explain: "De <strong>grunnleggende antakelsene</strong> er det vanskeligste laget å nå, fordi de er ubevisste og tas for gitt. Ansatte i VØNett tror ikke de bryter en regel – de tenker rett og slett ikke på informasjonssikkerhet som 'sitt ansvar', fordi det aldri har vært det."
+  },
+
+  // LÆRING - ARGYRIS & SCHÖN
+  {
+    category: "Læring – Argyris & Schön",
+    q: "Hva kjennetegner enkeltkretslæring?",
+    options: ["Man stiller spørsmål ved de grunnleggende verdiene og målene", "Man justerer atferd for å korrigere avvik, men endrer ikke de underliggende antakelsene", "Man lærer av feil ved å analysere årsaker i dybden", "Man bruker ekstern kunnskap til å forbedre prosesser"],
+    answer: 1,
+    explain: "<strong>Enkeltkretslæring:</strong> Man oppdager et avvik og korrigerer det – uten å stille spørsmål ved selve målene eller antakelsene. Etter arbeidsulykken innførte VØNett bedre HMS-rutiner, men endret ikke den grunnleggende oppfatningen av hva sikkerhet innebærer."
+  },
+  {
+    category: "Læring – Argyris & Schön",
+    q: "VØNett innførte HMS-rutiner etter arbeidsulykken. Ansatte ble bedre på fysisk sikkerhet, men informasjonssikkerhet ble fortsatt ikke sett som relevant. Hvilken type læring illustrerer dette?",
+    options: ["Dobbelkretslæring", "Enkeltkretslæring", "Trippelkretslæring", "Organisasjonslæring"],
+    answer: 1,
+    explain: "<strong>Enkeltkretslæring:</strong> Atferden ble endret (bedre fysisk sikkerhet), men de grunnleggende antakelsene ('sikkerhet handler om kropp, ikke data') ble aldri utfordret. Organisasjonen lærte å gjøre ting riktigere, ikke å gjøre de riktige tingene."
+  },
+  {
+    category: "Læring – Argyris & Schön",
+    q: "Hva kjennetegner dobbelkretslæring?",
+    options: ["To team lærer av hverandre samtidig", "Man justerer atferd og stiller samtidig spørsmål ved de underliggende målene, verdiene og antakelsene", "Man gjentar en prosess to ganger for å bekrefte resultatet", "Man lærer av suksess, ikke av feil"],
+    answer: 1,
+    explain: "<strong>Dobbelkretslæring:</strong> Man korrigerer ikke bare atferden, men undersøker og eventuelt endrer de grunnleggende antakelsene som førte til problemet. For VØNett betyr det å endre oppfatningen av hva 'sikkerhet' betyr – ikke bare innføre nye regler."
+  },
+  {
+    category: "Læring – Argyris & Schön",
+    q: "Hvorfor trenger VØNett dobbelkretslæring for å løse informasjonssikkerhetsutfordringen?",
+    options: ["Fordi de mangler ressurser til opplæring", "Fordi problemet er at ansatte ikke vet reglene", "Fordi den grunnleggende antakelsen om at informasjonssikkerhet er irrelevant i felt må endres", "Fordi ledelsen er inkompetent"],
+    answer: 2,
+    explain: "Problemet i VØNett er ikke at folk bryter regler de kjenner til – de mener genuint at informasjonssikkerhet ikke angår dem. Dette er en <strong>grunnleggende antakelse</strong> som må utfordres, noe som krever dobbelkretslæring."
+  },
+
+  // NORMALISERING AV AVVIK
+  {
+    category: "Normalisering av avvik",
+    q: "Diane Vaughans begrep 'normalisering av avvik' beskriver:",
+    options: ["At nye ansatte raskt tilpasser seg eksisterende normer", "At regelbrudd som gjentas uten synlige konsekvenser gradvis oppfattes som akseptabel praksis", "At ledere normaliserer feil for å beskytte ansatte", "At organisasjoner tilpasser reglene til praksisen over tid"],
+    answer: 1,
+    explain: "<strong>Normalisering av avvik (Vaughan):</strong> Når avvik fra reglene gjentar seg uten at noe går galt, begynner folk å oppfatte avviket som normalt og trygt. I VØNett: passordet på lappen har aldri ført til et sikkerhetsbrudd – ergo oppleves det som ufarlig."
+  },
+  {
+    category: "Normalisering av avvik",
+    q: "Hvilken av disse situasjonene fra VØNett er det tydeligste eksempelet på normalisering av avvik?",
+    options: ["At direktør Veumsland ikke visste om problemene", "At passord skrives på lapper uten at noen har reagert", "At ledergruppen er uenig om løsninger", "At montørene jobber lange skift under uvær"],
+    answer: 1,
+    explain: "Passordet på lappen er et klassisk eksempel: det bryter klart med sikkerhetsreglene, men ingen har noen gang blitt utsatt for et angrep. Over tid har dette blitt 'normalt'. Normalisering av avvik oppstår nettopp i den lange perioden uten synlige konsekvenser."
+  },
+
+  // ORGANISASJONSSTRUKTUR
+  {
+    category: "Organisasjonsstruktur",
+    q: "VØNett er delt inn i fem avdelinger med ulike ansvarsområder. Hva kalles denne typen struktur?",
+    options: ["Matrisestruktur", "Nettverksstruktur", "Funksjonell avdelingsstruktur", "Prosjektstruktur"],
+    answer: 2,
+    explain: "<strong>Funksjonell avdelingsstruktur:</strong> Organisasjonen er delt inn etter funksjon/fagområde – drift, prosjekt, HMS osv. Dette er en vanlig og oversiktlig struktur, men kan skape siloer og gjøre det vanskelig å koordinere på tvers."
+  },
+  {
+    category: "Organisasjonsstruktur",
+    q: "Arbeidslagene i VØNett 'fungerer svært selvstendig i praksis'. Dette er et eksempel på:",
+    options: ["Sentralisering", "Desentralisering", "Byråkratisering", "Standardisering"],
+    answer: 1,
+    explain: "<strong>Desentralisering:</strong> Beslutninger og handlingsrom flyttes nedover i hierarkiet. I VØNett har arbeidslagene stor autonomi – en fordel for fleksibilitet og feltarbeid, men en utfordring for å implementere sentralt bestemte sikkerhetskrav."
+  },
+  {
+    category: "Organisasjonsstruktur",
+    q: "Hva er forskjellen på formell og uformell struktur?",
+    options: ["Formell struktur er ny, uformell er gammel", "Formell struktur er det offisielle organkartet og prosedyrene; uformell er de faktiske mønstrene for kommunikasjon og atferd", "Formell struktur gjelder ledere; uformell gjelder ansatte", "Formell er skriftlig; uformell er muntlig"],
+    answer: 1,
+    explain: "I VØNett er det et stort gap mellom <strong>formell</strong> (prosedyrer, regler, organogram) og <strong>uformell struktur</strong> (hvem som faktisk tar beslutninger, hvordan informasjon deles, hvem man spør om hjelp). Den uformelle strukturen dominerer i hverdagen."
+  },
+
+  // LEDELSE
+  {
+    category: "Ledelse",
+    q: "Transformasjonsledelse kjennetegnes ved:",
+    options: ["Belønning og straff basert på resultater", "At lederen appellerer til verdier, inspirerer og skaper mening – ikke bare styrer gjennom regler", "Tett kontroll av alle arbeidsprosesser", "Fokus på kortsiktige mål og effektivitet"],
+    answer: 1,
+    explain: "<strong>Transformasjonsledelse:</strong> Lederen motiverer ved å appellere til høyere verdier og mening, skape visjon og bygge tillit. For kulturendringen i VØNett er dette viktig – nye regler og kontroll alene vil ikke virke hvis ikke ansatte forstår *hvorfor* informasjonssikkerhet er viktig."
+  },
+  {
+    category: "Ledelse",
+    q: "Driftslederne i VØNett prioriterer 'raske løsninger og fungerende strømnett fremfor rapportering'. Hva er konsekvensen av dette for organisasjonen?",
+    options: ["Det fører til bedre resultater og er uproblematisk", "Det styrker den formelle strukturen", "Det undergraver sentralt bestemte rutiner og gjør kulturendring vanskeligere", "Det er et tegn på god situasjonsbetinget ledelse"],
+    answer: 2,
+    explain: "Når <strong>mellomledere</strong> prioriterer lokal praksis fremfor sentrale krav, sendes et signal til ansatte om at reglene ikke er viktige. Dette gjør det svært vanskelig å implementere nye sikkerhetskrav fra toppen – og forsterker gapet mellom formell og uformell struktur."
+  },
+  {
+    category: "Ledelse",
+    q: "Hva menes med 'lederlegitimitet'?",
+    options: ["At lederen er formelt ansatt og har riktig tittel", "At ansatte aksepterer og anerkjenner lederens rett til å lede", "At lederen har juridisk myndighet", "At lederen er valgt av de ansatte"],
+    answer: 1,
+    explain: "<strong>Lederlegitimitet</strong> handler om at de ledede aksepterer lederens autoritet som rettmessig. I VØNett har Veumsland formell legitimitet, men feltarbeiderne stolte mer på sin nærmeste driftsleder – som de oppfatter som en som 'forstår jobben'."
+  },
+
+  // MAKT OG KONTROLL
+  {
+    category: "Makt og kontroll",
+    q: "Feltarbeiderne i VØNett styres mer av kollegiale normer enn av formelle regler. Dette er et eksempel på:",
+    options: ["Tvangsbasert kontroll", "Normativ kontroll", "Byråkratisk kontroll", "Markedsbasert kontroll"],
+    answer: 1,
+    explain: "<strong>Normativ kontroll:</strong> Atferd styres av felles normer, verdier og sosialt press i gruppen – ikke av regler eller sanksjoner. I 'cowboymiljøet' er den sterkeste kontrollen hva arbeidslaget forventer av hverandre, ikke hva prosedyreboken sier."
+  },
+
+  // HELHETSFORSTÅELSE
+  {
+    category: "Helhetsvurdering",
+    q: "Direktør Veumsland sier at 'utfordringen handler om mer enn enkeltbrudd på rutiner'. Hva peker dette mot?",
+    options: ["At de trenger strengere straff for regelbrudd", "At problemet er kulturelt og strukturelt – ikke bare individuelle feil", "At de trenger bedre IT-systemer", "At de må ansette flere HMS-rådgivere"],
+    answer: 1,
+    explain: "Veumsland erkjenner at dette er et <strong>kulturelt og strukturelt problem</strong>. Grunnleggende antakelser, subkulturer, normalisering av avvik og organisasjonsstruktur bidrar alle. Å bare innføre nye regler (enkeltkretslæring) vil ikke løse dette – det krever dypere endring (dobbelkretslæring + kulturarbeid)."
+  },
+  {
+    category: "Helhetsvurdering",
+    q: "Hva er den beste strategien for å endre informasjonssikkerhetskulturen i VØNett?",
+    options: ["Innføre strenge sanksjoner mot alle regelbrudd umiddelbart", "Kun sende ut et informasjonsskriv fra ledelsen", "Involvere feltarbeiderne i å definere ny praksis, bruke respekterte driftsledere som endringsagenter og koble informasjonssikkerhet til feltarbeidernes egne verdier", "Outsource sikkerhetsarbeidet til en ekstern leverandør"],
+    answer: 2,
+    explain: "Kulturendring krever påvirkning på alle tre nivåer hos Schein. <strong>Bottom-up involvering</strong>, bruk av <strong>interne endringsagenter</strong> (driftsledere med legitimitet i felt), og å gjøre trusselen konkret og relevant for feltarbeidere er mer effektivt enn toppstyrt påbud. Transformasjonsledelse, ikke transaksjonsledelse."
+  }
+];
+
+let answered = 0;
+let correct = 0;
+let wrong = 0;
+
+function renderQuiz() {
+  const main = document.getElementById('quizMain');
+  main.innerHTML = '';
+
+  let currentCategory = '';
+  questions.forEach((q, i) => {
+    const letters = ['A', 'B', 'C', 'D'];
+
+    if (q.category !== currentCategory) {
+      currentCategory = q.category;
+      const catDiv = document.createElement('div');
+      catDiv.className = 'category-section';
+      catDiv.innerHTML = `<div class="category-label">${q.category}</div>`;
+      main.appendChild(catDiv);
+    }
+
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = `q${i}`;
+
+    card.innerHTML = `
+      <div class="q-number">Spørsmål ${i + 1}</div>
+      <div class="question-text">${q.q}</div>
+      <div class="options" id="opts${i}">
+        ${q.options.map((opt, j) => `
+          <button class="option" onclick="answer(${i}, ${j})" id="opt${i}_${j}">
+            <span class="letter">${letters[j]}</span>
+            <span>${opt}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="explanation" id="exp${i}">${q.explain}</div>
+    `;
+    main.appendChild(card);
+  });
+}
+
+function answer(qIndex, chosen) {
+  const q = questions[qIndex];
+  const opts = document.querySelectorAll(`#opts${qIndex} .option`);
+
+  opts.forEach(o => o.disabled = true);
+
+  if (chosen === q.answer) {
+    opts[chosen].classList.add('correct');
+    correct++;
+    document.getElementById('correctCount').textContent = correct;
+  } else {
+    opts[chosen].classList.add('wrong');
+    opts[q.answer].classList.add('reveal-correct');
+    wrong++;
+    document.getElementById('wrongCount').textContent = wrong;
+  }
+
+  document.getElementById(`exp${qIndex}`).classList.add('show');
+
+  answered++;
+  const remain = questions.length - answered;
+  document.getElementById('remainCount').textContent = remain;
+
+  const pct = Math.round((answered / questions.length) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `Spørsmål ${answered} av ${questions.length}`;
+  document.getElementById('progressPct').textContent = pct + '%';
+
+  if (answered === questions.length) {
+    setTimeout(showResult, 800);
+  }
+}
+
+function showResult() {
+  document.getElementById('quizMain').style.display = 'none';
+  const rs = document.getElementById('resultScreen');
+  rs.classList.add('show');
+
+  const pct = Math.round((correct / questions.length) * 100);
+  document.getElementById('resultScore').textContent = `${correct} / ${questions.length}`;
+
+  let emoji, msg;
+  if (pct >= 90) { emoji = '🏆'; msg = 'Utmerket! Du er klar for eksamen!'; }
+  else if (pct >= 75) { emoji = '🎯'; msg = 'Veldig bra! Litt mer øving og du er klar.'; }
+  else if (pct >= 60) { emoji = '📚'; msg = 'Greit resultat – les igjennom forklaringene på det du bommet på.'; }
+  else { emoji = '💪'; msg = 'Ta en ny runde og fokuser på teoriene du er usikker på.'; }
+
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultMsg').textContent = msg;
+}
+
+function restartQuiz() {
+  answered = 0; correct = 0; wrong = 0;
+  document.getElementById('correctCount').textContent = 0;
+  document.getElementById('wrongCount').textContent = 0;
+  document.getElementById('remainCount').textContent = questions.length;
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('progressLabel').textContent = `Spørsmål 0 av ${questions.length}`;
+  document.getElementById('progressPct').textContent = '0%';
+  document.getElementById('resultScreen').classList.remove('show');
+  document.getElementById('quizMain').style.display = '';
+  renderQuiz();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+renderQuiz();
+</script>
+</body>
+</html>
